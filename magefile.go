@@ -21,6 +21,18 @@ const (
 	AddLicenseUrl   = "github.com/google/addlicense"
 )
 
+// CA
+// CA signed server
+// CA signed client
+// selfsigned server
+// selfsigned client
+
+//  [
+//     { Type: CA, Name: "Acme badgers lmtd", Pathes: ["path1"] },
+//     { Type: CA_SIGNED_SERVER, Name: "Acme badgers lmtd", Pathes: ["path1", "path2"] },
+//     { Type: CA_SIGNED_CLIENT, Name: "Acme badgers lmtd", Pathes: ["path1", "path2"] },
+// ]
+
 var (
 	goexec = mg.GoCmd()
 	g0     = sh.RunCmd(goexec)
