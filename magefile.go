@@ -169,12 +169,12 @@ func CheckCerts() error {
 	var selfSignedServerEnv string
 	var selfSignedClientEnv string
 	var selfSignedClient2Env string
-	var adminCertEnv string
-	var apiCertEnv string
-	var integrationCertEnv string
-	var remotingCertEnv string
-	var shutdownCertEnv string
-	var tektclientCertEnv string
+	var adminEnv string
+	var apiEnv string
+	var integrationEnv string
+	var remotingEnv string
+	var shutdownEnv string
+	var tektclientEnv string
 	for k, v := range certsConfig {
 		val, _ := v.(map[string]interface{})
 		switch k {
@@ -221,44 +221,44 @@ func CheckCerts() error {
 			Env = append(Env, val["crt"].(string))
 			selfSignedClient2Env = strings.Join(Env, "/")
 		case "SERVER_UTILS":
-			var adminEnv []string
-			var apiEnv []string
-			var integrationEnv []string
-			var remotingEnv []string
-			var shutdownEnv []string
-			var tektclientEnv []string
+			var admin []string
+			var api []string
+			var integration []string
+			var remoting []string
+			var shutdown []string
+			var tektclient []string
 			for p, i := range val["paths"].(map[string]interface{}) {
 				switch p {
 				case "admin":
-					adminEnv = append(adminEnv, i.(string))
+					admin = append(admin, i.(string))
 				case "api":
-					apiEnv = append(apiEnv, i.(string))
+					api = append(api, i.(string))
 				case "integration":
-					integrationEnv = append(integrationEnv, i.(string))
+					integration = append(integration, i.(string))
 				case "remoting":
-					remotingEnv = append(remotingEnv, i.(string))
+					remoting = append(remoting, i.(string))
 				case "shutdown":
-					shutdownEnv = append(shutdownEnv, i.(string))
+					shutdown = append(shutdown, i.(string))
 				case "tektclient":
-					tektclientEnv = append(tektclientEnv, i.(string))
+					tektclient = append(tektclient, i.(string))
 				}
 			}
-			adminEnv = append(adminEnv, val["crt"].(string))
-			apiEnv = append(apiEnv, val["crt"].(string))
-			integrationEnv = append(integrationEnv, val["crt"].(string))
-			remotingEnv = append(remotingEnv, val["crt"].(string))
-			shutdownEnv = append(shutdownEnv, val["crt"].(string))
-			tektclientEnv = append(tektclientEnv, val["crt"].(string))
+			admin = append(admin, val["crt"].(string))
+			api = append(api, val["crt"].(string))
+			integration = append(integration, val["crt"].(string))
+			remoting = append(remoting, val["crt"].(string))
+			shutdown = append(shutdown, val["crt"].(string))
+			tektclient = append(tektclient, val["crt"].(string))
 
-			adminCertEnv = strings.Join(adminEnv, "/")
-			apiCertEnv = strings.Join(apiEnv, "/")
-			integrationCertEnv = strings.Join(integrationEnv, "/")
-			remotingCertEnv = strings.Join(remotingEnv, "/")
-			shutdownCertEnv = strings.Join(shutdownEnv, "/")
-			tektclientCertEnv = strings.Join(tektclientEnv, "/")
+			adminEnv = strings.Join(admin, "/")
+			apiEnv = strings.Join(api, "/")
+			integrationEnv = strings.Join(integration, "/")
+			remotingEnv = strings.Join(remoting, "/")
+			shutdownEnv = strings.Join(shutdown, "/")
+			tektclientEnv = strings.Join(tektclient, "/")
 		}
 	}
-	return sh.RunV("./certsCheck.sh", caEnv, caSignedServerEnv, caSignedClientEnv, selfSignedServerEnv, selfSignedClientEnv, selfSignedClient2Env, adminCertEnv, apiCertEnv, integrationCertEnv, remotingCertEnv, shutdownCertEnv, tektclientCertEnv)
+	return sh.RunV("./certsCheck.sh", caEnv, caSignedServerEnv, caSignedClientEnv, selfSignedServerEnv, selfSignedClientEnv, selfSignedClient2Env, adminEnv, apiEnv, integrationEnv, remotingEnv, shutdownEnv, tektclientEnv)
 }
 
 // Renew internal certificates
