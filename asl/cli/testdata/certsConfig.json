@@ -1,0 +1,85 @@
+{
+  "CA": {
+    "bits": "4096",
+    "days": "825",
+    "key": "ca.key",
+    "pubkey": "key.pub",
+    "signed_crt": "ca.crt",
+    "crt": "cacert.pem",
+    "subject": "/C=US/ST=/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme CA/",
+    "paths": {
+      "cli": "cli/testdata"
+    }
+  },
+  "CA_SIGNED_SERVER": {
+    "key": "casignedserverkey.pem",
+    "req": "casignedservercert.req",
+    "ca_signing_crt": "cacert.pem",
+    "crt": "casignedservercert.pem",
+    "days": "825",
+    "extfile": "server-v3.ext",
+    "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme badgers ltd./",
+    "paths": {
+      "cli": "cli/testdata"
+    }
+  },
+  "CA_SIGNED_CLIENT": {
+    "key": "casignedclientkey.pem",
+    "req": "casignedclientcert.req",
+    "ca_signing_crt": "cacert.pem",
+    "crt": "casignedclientcert.pem",
+    "days": "825",
+    "extfile": "server-v3.ext",
+    "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme squirrels ltd./",
+    "paths": {
+      "cli": "cli/testdata"
+    }
+  },
+  "SELF_SIGNED_SERVER": {
+    "key": "selfsignedserverkey.pem",
+    "pkeyopt": "rsa_keygen_bits:4096",
+    "crt": "selfsignedservercert.pem",
+    "config_file": "cfg/certs/openssl.cnf",
+    "days": "825",
+    "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme antelopes ltd./",
+    "paths": {
+      "cli": "cli/testdata"
+    }
+  },
+  "SELF_SIGNED_CLIENT": {
+    "key": "selfsignedclientkey.pem",
+    "pkeyopt": "rsa_keygen_bits:4096",
+    "crt": "selfsignedclientcert.pem",
+    "config_file": "cfg/certs/openssl.cnf",
+    "days": "825",
+    "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme aardvarks ltd./",
+    "paths": {
+      "cli": "cli/testdata"
+    }
+  },
+  "SELF_SIGNED_CLIENT2": {
+    "key": "selfsignedclientkey2.pem",
+    "pkeyopt": "rsa_keygen_bits:4096",
+    "crt": "selfsignedclientcert2.pem",
+    "config_file": "cfg/certs/openssl.cnf",
+    "days": "825",
+    "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme squirrels ltd./",
+    "paths": {
+      "cli": "cli/testdata"
+    }
+  },
+  "SERVER_UTILS": {
+    "key": "cli/testdata/casignedserverkey.pem",
+    "crt": "servercert.pem",
+    "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme badgers ltd./",
+    "config_file": "cfg/certs/openssl.cnf",
+    "paths": {
+      "admin": "admin/testdata",
+      "api": "api/testdata",
+      "integration": "integration/testdata",
+      "remoting": "remoting/testdata",
+      "shutdown": "shutdown/testdata",
+      "tektclient": "tekclient/testdata"
+    }
+  }
+}

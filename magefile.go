@@ -4,8 +4,10 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"github.com/spirit-labs/tektite/kafkagen"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -139,6 +141,67 @@ func Run() error {
 	fmt.Println("Running tektited in a standalone setup...")
 	return g0("run", "cmd/tektited/main.go", "--config", "cfg/standalone.conf")
 }
+
+// Check internal certificates
+func CheckCerts() error {
+	fmt.Println("Checking internal certificates expiration dates")
+	certsConfigPath := "cli/testdata/certsConfig.json"
+	// Open the JSON file
+	file, err := os.Open(certsConfigPath)
+	if err != nil {
+		return fmt.Errorf("could not open file: %w", err)
+	}
+	defer file.Close()
+	// Read the file's content
+	bytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		return fmt.Errorf("could not read file: %w", err)
+	}
+	// Unmarshal the JSON data into a map
+	var certsConfig map[string]interface{}
+	err = json.Unmarshal(bytes, &certsConfig)
+	if err != nil {
+		return fmt.Errorf("could not unmarshal JSON: %w", err)
+	}
+	var caEnv string
+	var caSignedServerEnv string
+	var caSignedClientEnv string
+	for k, v := range certsConfig {
+		val, _ := v.(map[string]interface{})
+		switch k {
+		case "CA":
+			var Env []string
+			for _, i := range val["paths"].(map[string]interface{}) {
+				Env = append(Env, i.(string))
+			}
+			Env = append(Env, val["crt"].(string))
+			caEnv = strings.Join(Env, "/")
+		case "CA_SIGNED_SERVER":
+			var Env []string
+			for _, i := range val["paths"].(map[string]interface{}) {
+				Env = append(Env, i.(string))
+			}
+			Env = append(Env, val["crt"].(string))
+			caSignedServerEnv = strings.Join(Env, "/")
+		case "CA_SIGNED_CLIENT":
+			var Env []string
+			for _, i := range val["paths"].(map[string]interface{}) {
+				Env = append(Env, i.(string))
+			}
+			Env = append(Env, val["crt"].(string))
+			caSignedClientEnv = strings.Join(Env, "/")
+		}
+	}
+	return sh.RunV("./certsCheckTest.sh", caEnv, caSignedServerEnv, caSignedClientEnv)
+}
+
+// Renew internal certificates
+/*
+func RenewCerts() error {
+	fmt.Println("Renewing internal certificates")
+	return
+}
+*/
 
 // GenKafkaProtocol generates the Kafka protocol code from the protocol JSON descriptors
 func GenKafkaProtocol() error {
