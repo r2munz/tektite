@@ -157,107 +157,61 @@ func CheckCerts() error {
 	if err != nil {
 		return fmt.Errorf("could not read file: %w", err)
 	}
-	// Unmarshal the JSON data into a map
-	var certsConfig map[string]interface{}
-	err = json.Unmarshal(bytes, &certsConfig)
-	if err != nil {
-		return fmt.Errorf("could not unmarshal JSON: %w", err)
-	}
-	var caEnv string
-	var caSignedServerEnv string
-	var caSignedClientEnv string
-	var selfSignedServerEnv string
-	var selfSignedClientEnv string
-	var selfSignedClient2Env string
-	var adminEnv string
-	var apiEnv string
-	var integrationEnv string
-	var remotingEnv string
-	var shutdownEnv string
-	var tektclientEnv string
-	for k, v := range certsConfig {
-		val, _ := v.(map[string]interface{})
-		switch k {
-		case "CA":
-			var Env []string
-			for _, i := range val["paths"].(map[string]interface{}) {
-				Env = append(Env, i.(string))
-			}
-			Env = append(Env, val["crt"].(string))
-			caEnv = strings.Join(Env, "/")
-		case "CA_SIGNED_SERVER":
-			var Env []string
-			for _, i := range val["paths"].(map[string]interface{}) {
-				Env = append(Env, i.(string))
-			}
-			Env = append(Env, val["crt"].(string))
-			caSignedServerEnv = strings.Join(Env, "/")
-		case "CA_SIGNED_CLIENT":
-			var Env []string
-			for _, i := range val["paths"].(map[string]interface{}) {
-				Env = append(Env, i.(string))
-			}
-			Env = append(Env, val["crt"].(string))
-			caSignedClientEnv = strings.Join(Env, "/")
-		case "SELF_SIGNED_SERVER":
-			var Env []string
-			for _, i := range val["paths"].(map[string]interface{}) {
-				Env = append(Env, i.(string))
-			}
-			Env = append(Env, val["crt"].(string))
-			selfSignedServerEnv = strings.Join(Env, "/")
-		case "SELF_SIGNED_CLIENT":
-			var Env []string
-			for _, i := range val["paths"].(map[string]interface{}) {
-				Env = append(Env, i.(string))
-			}
-			Env = append(Env, val["crt"].(string))
-			selfSignedClientEnv = strings.Join(Env, "/")
-		case "SELF_SIGNED_CLIENT2":
-			var Env []string
-			for _, i := range val["paths"].(map[string]interface{}) {
-				Env = append(Env, i.(string))
-			}
-			Env = append(Env, val["crt"].(string))
-			selfSignedClient2Env = strings.Join(Env, "/")
-		case "SERVER_UTILS":
-			var admin []string
-			var api []string
-			var integration []string
-			var remoting []string
-			var shutdown []string
-			var tektclient []string
-			for p, i := range val["paths"].(map[string]interface{}) {
-				switch p {
-				case "admin":
-					admin = append(admin, i.(string))
-				case "api":
-					api = append(api, i.(string))
-				case "integration":
-					integration = append(integration, i.(string))
-				case "remoting":
-					remoting = append(remoting, i.(string))
-				case "shutdown":
-					shutdown = append(shutdown, i.(string))
-				case "tektclient":
-					tektclient = append(tektclient, i.(string))
-				}
-			}
-			admin = append(admin, val["crt"].(string))
-			api = append(api, val["crt"].(string))
-			integration = append(integration, val["crt"].(string))
-			remoting = append(remoting, val["crt"].(string))
-			shutdown = append(shutdown, val["crt"].(string))
-			tektclient = append(tektclient, val["crt"].(string))
 
-			adminEnv = strings.Join(admin, "/")
-			apiEnv = strings.Join(api, "/")
-			integrationEnv = strings.Join(integration, "/")
-			remotingEnv = strings.Join(remoting, "/")
-			shutdownEnv = strings.Join(shutdown, "/")
-			tektclientEnv = strings.Join(tektclient, "/")
-		}
+	type Ca struct {
+		Bits      int      `json:"bits"`
+		Crt       string   `json:"crt"`
+		Days      int      `json:"days"`
+		Paths     []string `json:"paths"`
+		Pubkey    string   `json:"pubkey"`
+		SignedCrt string   `json:"signedCrt"`
+		Subject   string   `json:"subject"`
 	}
+	type CaSigned struct {
+		CaSigningCrt string   `json:"caSigningCrt"`
+		Crt          string   `json:"crt"`
+		Days         int      `json:"days"`
+		ExtFile      string   `json:"extFile"`
+		Key          string   `json:"key"`
+		Paths        []string `json:"paths"`
+		Req          string   `json:"req"`
+		Subject      string   `json:"subject"`
+	}
+	type SelfSigned struct {
+		ConfigFile string   `json:"configFile"`
+		Crt        string   `json:"crt"`
+		Days       int      `json:"days"`
+		Key        string   `json:"key"`
+		Paths      []string `json:"paths"`
+		PkeyOpt    string   `json:"pkeyOpt"`
+		Subject    string   `json:"subject"`
+	}
+	type CertsConfig struct {
+		Ca                *Ca         `json:"ca"`
+		CaSignedServer    *CaSigned   `json:"caSignedServer"`
+		CaSignedClient    *CaSigned   `json:"caSignedClient"`
+		SelfSignedServer  *SelfSigned `json:"selfSignedServer"`
+		SelfSignedClient  *SelfSigned `json:"selfSignedClient"`
+		SelfSignedClient2 *SelfSigned `json:"selfSignedClient2"`
+		ServerUtils       *SelfSigned `json:"serverUtils"`
+	}
+	var config CertsConfig
+	err = json.Unmarshal(bytes, &config)
+	if err != nil {
+		return fmt.Errorf("could not unmarshal JSON: %s\n", err)
+	}
+	caEnv := strings.Join([]string{config.Ca.Paths[0], config.Ca.Crt}, "/")
+	caSignedServerEnv := strings.Join([]string{config.CaSignedServer.Paths[0], config.CaSignedServer.Crt}, "/")
+	caSignedClientEnv := strings.Join([]string{config.CaSignedClient.Paths[0], config.CaSignedClient.Crt}, "/")
+	selfSignedServerEnv := strings.Join([]string{config.SelfSignedServer.Paths[0], config.SelfSignedServer.Crt}, "/")
+	selfSignedClientEnv := strings.Join([]string{config.SelfSignedClient.Paths[0], config.SelfSignedClient.Crt}, "/")
+	selfSignedClient2Env := strings.Join([]string{config.SelfSignedClient2.Paths[0], config.SelfSignedClient2.Crt}, "/")
+	adminEnv := strings.Join([]string{config.ServerUtils.Paths[0], config.ServerUtils.Crt}, "/")
+	apiEnv := strings.Join([]string{config.ServerUtils.Paths[1], config.ServerUtils.Crt}, "/")
+	integrationEnv := strings.Join([]string{config.ServerUtils.Paths[2], config.ServerUtils.Crt}, "/")
+	remotingEnv := strings.Join([]string{config.ServerUtils.Paths[3], config.ServerUtils.Crt}, "/")
+	shutdownEnv := strings.Join([]string{config.ServerUtils.Paths[4], config.ServerUtils.Crt}, "/")
+	tektclientEnv := strings.Join([]string{config.ServerUtils.Paths[4], config.ServerUtils.Crt}, "/")
 	return sh.RunV("./certsCheck.sh", caEnv, caSignedServerEnv, caSignedClientEnv, selfSignedServerEnv, selfSignedClientEnv, selfSignedClient2Env, adminEnv, apiEnv, integrationEnv, remotingEnv, shutdownEnv, tektclientEnv)
 }
 
