@@ -149,13 +149,13 @@ func CheckCerts() error {
 	// Open the JSON file
 	file, err := os.Open(certsConfigPath)
 	if err != nil {
-		return fmt.Errorf("could not open file: %w", err)
+		return fmt.Errorf("Could not open file: %w", err)
 	}
 	defer file.Close()
 	// Read the file's content
 	bytes, err := ioutil.ReadAll(file)
 	if err != nil {
-		return fmt.Errorf("could not read file: %w", err)
+		return fmt.Errorf("Could not read file: %w", err)
 	}
 
 	type Ca struct {
@@ -197,7 +197,7 @@ func CheckCerts() error {
 	var config CertsConfig
 	err = json.Unmarshal(bytes, &config)
 	if err != nil {
-		return fmt.Errorf("could not unmarshal JSON: %s\n", err)
+		return fmt.Errorf("Could not unmarshal certsConfig.json: %s\n", err)
 	}
 	caEnv := strings.Join([]string{config.Ca.Paths[0], config.Ca.Crt}, "/")
 	caSignedServerEnv := strings.Join([]string{config.CaSignedServer.Paths[0], config.CaSignedServer.Crt}, "/")
