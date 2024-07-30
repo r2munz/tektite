@@ -212,7 +212,18 @@ func CheckCerts() error {
 	shutdownEnv := strings.Join([]string{config.ServerUtils.Paths[4], config.ServerUtils.Crt}, "/")
 	tektclientEnv := strings.Join([]string{config.ServerUtils.Paths[5], config.ServerUtils.Crt}, "/")
 
-	return sh.RunV("./certsCheck.sh", caEnv, caSignedServerEnv, caSignedClientEnv, selfSignedServerEnv, selfSignedClientEnv, selfSignedClient2Env, adminEnv, apiEnv, integrationEnv, remotingEnv, shutdownEnv, tektclientEnv)
+	Envs := []string{caEnv, caSignedServerEnv, caSignedClientEnv, selfSignedServerEnv, selfSignedClientEnv, selfSignedClient2Env, adminEnv, apiEnv, integrationEnv, remotingEnv, shutdownEnv, tektclientEnv}
+
+	for e := range Envs {
+		env := Envs[e]
+		opensslCmd := fmt.Sprintf(`openssl x509 -enddate -noout -in "%s"|cut -d= -f 2`, env)
+		output, err := sh.Output("sh", "-c", opensslCmd)
+		if err != nil {
+			return fmt.Errorf("could not execute command")
+		}
+		fmt.Println(output, ": ", env)
+	}
+	return nil
 }
 
 // Renew internal certificates
