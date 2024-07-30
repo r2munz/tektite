@@ -12,7 +12,6 @@
     "subject": "/C=US/ST=/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme CA/"
   },
   "caSignedServer": {
-    "caSigningCrt": "cacert.pem",
     "crt": "casignedservercert.pem",
     "days": 825,
     "extFile": "server-v3.ext",
@@ -24,7 +23,6 @@
     "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme badgers ltd./"
   },
   "caSignedClient": {
-    "caSigningCrt": "cacert.pem",
     "crt": "casignedclientcert.pem",
     "days": 825,
     "extFile": "server-v3.ext",
@@ -36,7 +34,7 @@
     "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme squirrels ltd./"
   },
   "selfSignedServer": {
-    "configFile": "cfg/certs/openssl.cnf",
+    "configFile": "../../cfg/certs/openssl.cnf",
     "crt": "selfsignedservercert.pem",
     "days": 825,
     "key": "selfsignedserverkey.pem",
@@ -47,7 +45,7 @@
     "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme antelopes ltd./"
   },
   "selfSignedClient": {
-    "configFile": "cfg/certs/openssl.cnf",
+    "configFile": "../../cfg/certs/openssl.cnf",
     "crt": "selfsignedclientcert.pem",
     "days": 825,
     "key": "selfsignedclientkey.pem",
@@ -58,7 +56,7 @@
     "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme aardvarks ltd./"
   },
   "selfSignedClient2": {
-    "configFile": "cfg/certs/openssl.cnf",
+    "configFile": "../../cfg/certs/openssl.cnf",
     "crt": "selfsignedclientcert2.pem",
     "days": 825,
     "key": "selfsignedclientkey2.pem",

@@ -168,14 +168,13 @@ func CheckCerts() error {
 		Subject   string   `json:"subject"`
 	}
 	type CaSigned struct {
-		CaSigningCrt string   `json:"caSigningCrt"`
-		Crt          string   `json:"crt"`
-		Days         int      `json:"days"`
-		ExtFile      string   `json:"extFile"`
-		Key          string   `json:"key"`
-		Paths        []string `json:"paths"`
-		Req          string   `json:"req"`
-		Subject      string   `json:"subject"`
+		Crt     string   `json:"crt"`
+		Days    int      `json:"days"`
+		ExtFile string   `json:"extFile"`
+		Key     string   `json:"key"`
+		Paths   []string `json:"paths"`
+		Req     string   `json:"req"`
+		Subject string   `json:"subject"`
 	}
 	type SelfSigned struct {
 		ConfigFile string   `json:"configFile"`
@@ -211,7 +210,8 @@ func CheckCerts() error {
 	integrationEnv := strings.Join([]string{config.ServerUtils.Paths[2], config.ServerUtils.Crt}, "/")
 	remotingEnv := strings.Join([]string{config.ServerUtils.Paths[3], config.ServerUtils.Crt}, "/")
 	shutdownEnv := strings.Join([]string{config.ServerUtils.Paths[4], config.ServerUtils.Crt}, "/")
-	tektclientEnv := strings.Join([]string{config.ServerUtils.Paths[4], config.ServerUtils.Crt}, "/")
+	tektclientEnv := strings.Join([]string{config.ServerUtils.Paths[5], config.ServerUtils.Crt}, "/")
+
 	return sh.RunV("./certsCheck.sh", caEnv, caSignedServerEnv, caSignedClientEnv, selfSignedServerEnv, selfSignedClientEnv, selfSignedClient2Env, adminEnv, apiEnv, integrationEnv, remotingEnv, shutdownEnv, tektclientEnv)
 }
 
