@@ -162,6 +162,7 @@ func CheckCerts() error {
 		Bits      int      `json:"bits"`
 		Crt       string   `json:"crt"`
 		Days      int      `json:"days"`
+		Key       string   `json:"key"`
 		Paths     []string `json:"paths"`
 		Pubkey    string   `json:"pubkey"`
 		SignedCrt string   `json:"signedCrt"`
@@ -227,12 +228,196 @@ func CheckCerts() error {
 }
 
 // Renew internal certificates
-/*
 func RenewCerts() error {
 	fmt.Println("Renewing internal certificates")
-	return
+
+	certsConfigPath := "cli/testdata/certsConfig.json"
+	// Open the JSON file
+	file, err := os.Open(certsConfigPath)
+	if err != nil {
+		return fmt.Errorf("Could not open file: %w", err)
+	}
+	defer file.Close()
+	// Read the file's content
+	bytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		return fmt.Errorf("Could not read file: %w", err)
+	}
+
+	type Ca struct {
+		Bits      int      `json:"bits"`
+		Crt       string   `json:"crt"`
+		Days      int      `json:"days"`
+		Key       string   `json:"key"`
+		Paths     []string `json:"paths"`
+		Pubkey    string   `json:"pubkey"`
+		SignedCrt string   `json:"signedCrt"`
+		Subject   string   `json:"subject"`
+	}
+	type CaSigned struct {
+		Crt     string   `json:"crt"`
+		Days    int      `json:"days"`
+		ExtFile string   `json:"extFile"`
+		Key     string   `json:"key"`
+		Paths   []string `json:"paths"`
+		Req     string   `json:"req"`
+		Subject string   `json:"subject"`
+	}
+	type SelfSigned struct {
+		ConfigFile string   `json:"configFile"`
+		Crt        string   `json:"crt"`
+		Days       int      `json:"days"`
+		Key        string   `json:"key"`
+		Paths      []string `json:"paths"`
+		PkeyOpt    string   `json:"pkeyOpt"`
+		Subject    string   `json:"subject"`
+	}
+	type CertsConfig struct {
+		Ca                *Ca         `json:"ca"`
+		CaSignedServer    *CaSigned   `json:"caSignedServer"`
+		CaSignedClient    *CaSigned   `json:"caSignedClient"`
+		SelfSignedServer  *SelfSigned `json:"selfSignedServer"`
+		SelfSignedClient  *SelfSigned `json:"selfSignedClient"`
+		SelfSignedClient2 *SelfSigned `json:"selfSignedClient2"`
+		ServerUtils       *SelfSigned `json:"serverUtils"`
+	}
+	var config CertsConfig
+	err = json.Unmarshal(bytes, &config)
+	if err != nil {
+		return fmt.Errorf("Could not unmarshal certsConfig.json: %s\n", err)
+	}
+
+	tmpDir := "tmp"
+	fmt.Println("Creating", tmpDir, "directory")
+	err = sh.Run("mkdir", "-p", tmpDir)
+	if err != nil {
+		return fmt.Errorf("Failed to create tmp directory: %v", err)
+	}
+	err = os.Chdir(tmpDir)
+	defer os.Chdir("..")
+	if err != nil {
+		return fmt.Errorf("Failed to change directory to %s: %v", tmpDir, err)
+	}
+
+	fmt.Println("Generating CA keys and certificates")
+	caKey := config.Ca.Key
+	caBits := config.Ca.Bits
+	opensslCmd := fmt.Sprintf(`openssl genrsa -out %s %d`, caKey, caBits)
+	err = sh.Run("sh", "-c", opensslCmd)
+	if err != nil {
+		return fmt.Errorf("Could not execute openssl command to create CA private key: %v", err)
+	}
+
+	// Pub key not needed for signing the certificates
+	/*
+		caPubKey := config.Ca.Pubkey
+		opensslCmd = fmt.Sprintf(`openssl rsa -in %s -outform PEM -pubout -out %s`, caKey, caPubKey)
+		err = sh.Run("sh", "-c", opensslCmd)
+		if err != nil {
+			return fmt.Errorf("Could not execute openssl command to extract CA public key: %v", err)
+		}
+	*/
+
+	caDays := config.Ca.Days
+	caSignedCrt := config.Ca.SignedCrt
+	caSubject := config.Ca.Subject
+	opensslCmd = fmt.Sprintf(`openssl req -x509 -new -nodes -key %s -sha256 -days %d -out %s -subj "%s"`, caKey, caDays, caSignedCrt, caSubject)
+	err = sh.Run("sh", "-c", opensslCmd)
+	if err != nil {
+		return fmt.Errorf("Could not generate CA Signed certificate: %v", err)
+	}
+
+	caCrt := config.Ca.Crt
+	catCmd := fmt.Sprintf(`cat %s %s > %s`, caSignedCrt, caKey, caCrt)
+	err = sh.Run("sh", "-c", catCmd)
+	if err != nil {
+		return fmt.Errorf("Could not generate CA PEM certificate: %v", err)
+	}
+
+	fmt.Println("Generating server and clients keys, self-signed certificates")
+	serverKey := config.SelfSignedServer.Key
+	clientKey := config.SelfSignedClient.Key
+	client2Key := config.SelfSignedClient2.Key
+	serverPkeyOpt := config.SelfSignedServer.PkeyOpt
+	clientPkeyOpt := config.SelfSignedClient.PkeyOpt
+	client2PkeyOpt := config.SelfSignedClient.PkeyOpt
+	opensslCmd = fmt.Sprintf(`openssl genpkey -algorithm RSA -out %s -pkeyopt %s`, serverKey, serverPkeyOpt)
+	err = sh.Run("sh", "-c", opensslCmd)
+	if err != nil {
+		return fmt.Errorf("Could not generate Server key: %v", err)
+	}
+	opensslCmd = fmt.Sprintf(`openssl genpkey -algorithm RSA -out %s -pkeyopt %s`, clientKey, clientPkeyOpt)
+	err = sh.Run("sh", "-c", opensslCmd)
+	if err != nil {
+		return fmt.Errorf("Could not generate Client key: %v", err)
+	}
+	opensslCmd = fmt.Sprintf(`openssl genpkey -algorithm RSA -out %s -pkeyopt %s`, client2Key, client2PkeyOpt)
+	err = sh.Run("sh", "-c", opensslCmd)
+	if err != nil {
+		return fmt.Errorf("Could not generate Client2 key: %v", err)
+	}
+	serverSelfSignedCrt := config.SelfSignedServer.Crt
+	clientSelfSignedCrt := config.SelfSignedClient.Crt
+	client2SelfSignedCrt := config.SelfSignedClient2.Crt
+	serverSelfSignedConfigFile := config.SelfSignedServer.ConfigFile
+	clientSelfSignedConfigFile := config.SelfSignedClient.ConfigFile
+	client2SelfSignedConfigFile := config.SelfSignedClient.ConfigFile
+	serverSelfSignedDays := config.SelfSignedServer.Days
+	clientSelfSignedDays := config.SelfSignedClient.Days
+	client2SelfSignedDays := config.SelfSignedClient2.Days
+	serverSelfSignedSubject := config.SelfSignedServer.Subject
+	clientSelfSignedSubject := config.SelfSignedClient.Subject
+	client2SelfSignedSubject := config.SelfSignedClient2.Subject
+	opensslCmd = fmt.Sprintf(`openssl req -new -x509 -key %s -out %s -config %s -days %d -subj "%s"`, serverKey, serverSelfSignedCrt, serverSelfSignedConfigFile, serverSelfSignedDays, serverSelfSignedSubject)
+	err = sh.Run("sh", "-c", opensslCmd)
+	if err != nil {
+		return fmt.Errorf("Could not generate Server self signed certificate: %v", err)
+	}
+	opensslCmd = fmt.Sprintf(`openssl req -new -x509 -key %s -out %s -config %s -days %d -subj "%s"`, clientKey, clientSelfSignedCrt, clientSelfSignedConfigFile, clientSelfSignedDays, clientSelfSignedSubject)
+	err = sh.Run("sh", "-c", opensslCmd)
+	if err != nil {
+		return fmt.Errorf("Could not generate Client self signed certificate: %v", err)
+	}
+	opensslCmd = fmt.Sprintf(`openssl req -new -x509 -key %s -out %s -config %s -days %d -subj "%s"`, client2Key, client2SelfSignedCrt, client2SelfSignedConfigFile, client2SelfSignedDays, client2SelfSignedSubject)
+	err = sh.Run("sh", "-c", opensslCmd)
+	if err != nil {
+		return fmt.Errorf("Could not generate Client2 self signed certificate: %v", err)
+	}
+
+	fmt.Println("Generating server and client requests, signed certificates")
+	serverReq := config.CaSignedServer.Req
+	clientReq := config.CaSignedClient.Req
+	serverCaSignedSubject := config.CaSignedServer.Subject
+	clientCaSignedSubject := config.CaSignedClient.Subject
+	opensslCmd = fmt.Sprintf(`openssl req -new -key %s -out %s -subj "%s"`, serverKey, serverReq, serverCaSignedSubject)
+	err = sh.Run("sh", "-c", opensslCmd)
+	if err != nil {
+		return fmt.Errorf("Could not generate Server request: %v", err)
+	}
+	opensslCmd = fmt.Sprintf(`openssl req -new -key %s -out %s -subj "%s"`, clientKey, clientReq, clientCaSignedSubject)
+	err = sh.Run("sh", "-c", opensslCmd)
+	if err != nil {
+		return fmt.Errorf("Could not generate Client request: %v", err)
+	}
+	serverCaSignedCrt := config.CaSignedServer.Crt
+	clientCaSignedCrt := config.CaSignedClient.Crt
+	serverCaSignedDays := config.CaSignedServer.Days
+	clientCaSignedDays := config.CaSignedClient.Days
+	serverCaSignedExtFile := config.CaSignedServer.ExtFile
+	clientCaSignedExtFile := config.CaSignedClient.ExtFile
+	opensslCmd = fmt.Sprintf(`openssl x509 -req -in %s -CA %s -out %s -days %d -sha256 -extfile %s`, serverReq, caCrt, serverCaSignedCrt, serverCaSignedDays, serverCaSignedExtFile)
+	err = sh.Run("sh", "-c", opensslCmd)
+	if err != nil {
+		return fmt.Errorf("Could not sign Server certificate: %v", err)
+	}
+	opensslCmd = fmt.Sprintf(`openssl x509 -req -in %s -CA %s -out %s -days %d -sha256 -extfile %s`, clientReq, caCrt, clientCaSignedCrt, clientCaSignedDays, clientCaSignedExtFile)
+	err = sh.Run("sh", "-c", opensslCmd)
+	if err != nil {
+		return fmt.Errorf("Could not sign Client certificate: %v", err)
+	}
+
+	return nil
 }
-*/
 
 // GenKafkaProtocol generates the Kafka protocol code from the protocol JSON descriptors
 func GenKafkaProtocol() error {

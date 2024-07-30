@@ -9,13 +9,13 @@
     ],
     "pubkey": "key.pub",
     "signedCrt": "ca.crt",
-    "subject": "/C=US/ST=/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme CA/"
+    "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme CA/"
   },
   "caSignedServer": {
     "crt": "casignedservercert.pem",
     "days": 825,
-    "extFile": "server-v3.ext",
-    "key": "casignedserverkey.pem",
+    "extFile": "../cli/testdata/server-v3.ext",
+    "key": "server.key",
     "paths": [
       "cli/testdata"
     ],
@@ -25,8 +25,8 @@
   "caSignedClient": {
     "crt": "casignedclientcert.pem",
     "days": 825,
-    "extFile": "server-v3.ext",
-    "key": "casignedclientkey.pem",
+    "extFile": "../cli/testdata/server-v3.ext",
+    "key": "client.key",
     "paths": [
       "cli/testdata"
     ],
@@ -34,10 +34,10 @@
     "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme squirrels ltd./"
   },
   "selfSignedServer": {
-    "configFile": "../../cfg/certs/openssl.cnf",
+    "configFile": "../cfg/certs/openssl.cnf",
     "crt": "selfsignedservercert.pem",
     "days": 825,
-    "key": "selfsignedserverkey.pem",
+    "key": "server.key",
     "pkeyopt": "rsa_keygen_bits:4096",
     "paths": [
       "cli/testdata"
@@ -45,10 +45,10 @@
     "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme antelopes ltd./"
   },
   "selfSignedClient": {
-    "configFile": "../../cfg/certs/openssl.cnf",
+    "configFile": "../cfg/certs/openssl.cnf",
     "crt": "selfsignedclientcert.pem",
     "days": 825,
-    "key": "selfsignedclientkey.pem",
+    "key": "client.key",
     "paths": [
       "cli/testdata"
     ],
@@ -56,10 +56,10 @@
     "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme aardvarks ltd./"
   },
   "selfSignedClient2": {
-    "configFile": "../../cfg/certs/openssl.cnf",
+    "configFile": "../cfg/certs/openssl.cnf",
     "crt": "selfsignedclientcert2.pem",
     "days": 825,
-    "key": "selfsignedclientkey2.pem",
+    "key": "client2.key",
     "paths": [
       "cli/testdata"
     ],
@@ -67,7 +67,7 @@
     "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme squirrels ltd./"
   },
   "serverUtils": {
-    "configFile": "cfg/certs/openssl.cnf",
+    "configFile": "../cfg/certs/openssl.cnf",
     "crt": "servercert.pem",
     "days": 825,
     "key": "cli/testdata/casignedserverkey.pem",
