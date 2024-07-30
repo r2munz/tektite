@@ -415,6 +415,7 @@ func RenewCerts() error {
 	if err != nil {
 		return fmt.Errorf("Could not sign Client certificate: %v", err)
 	}
+
 	//TODO move selfsigned server cert in place for server utils and remove tmp folder
 
 	return nil
