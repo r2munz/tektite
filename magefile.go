@@ -219,7 +219,7 @@ func CheckCerts() error {
 		opensslCmd := fmt.Sprintf(`openssl x509 -enddate -noout -in "%s"|cut -d= -f 2`, env)
 		output, err := sh.Output("sh", "-c", opensslCmd)
 		if err != nil {
-			return fmt.Errorf("could not execute command")
+			return fmt.Errorf("Could not execute command openssl cert check command on %s", env)
 		}
 		fmt.Println(output, ": ", env)
 	}
