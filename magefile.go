@@ -308,17 +308,6 @@ func RenewCerts() error {
 		return fmt.Errorf("Could not execute openssl command to create CA private key: %v", err)
 	}
 
-	//TODO remove comment section
-	// Pub key not needed for signing the certificates
-	/*
-		caPubKey := config.Ca.Pubkey
-		opensslCmd = fmt.Sprintf(`openssl rsa -in %s -outform PEM -pubout -out %s`, caKey, caPubKey)
-		err = sh.Run("sh", "-c", opensslCmd)
-		if err != nil {
-			return fmt.Errorf("Could not execute openssl command to extract CA public key: %v", err)
-		}
-	*/
-
 	caDays := config.Ca.Days
 	caSignedCrt := config.Ca.SignedCrt
 	caSubject := config.Ca.Subject
@@ -417,9 +406,10 @@ func RenewCerts() error {
 		return fmt.Errorf("Could not sign Client certificate: %v", err)
 	}
 
+	fmt.Println("Copying newly generated files in place")
 	newServerCert := "servercert.pem"
-	cpCmd := fmt.Sprintf(`cp %s %s`, serverSelfSignedCrt, newServerCert)
-	err = sh.Run("sh", "-c", cpCmd)
+	cpCmd := fmt.Sprintf(`cp -v %s %s`, serverSelfSignedCrt, newServerCert)
+	err = sh.RunV("sh", "-c", cpCmd)
 	if err != nil {
 		return fmt.Errorf("Could not rename newly self-signed Server certificate: %v", err)
 	}
@@ -435,12 +425,45 @@ func RenewCerts() error {
 	for p := range serverUtilsPaths {
 		path := serverUtilsPaths[p]
 		cpCmd = fmt.Sprintf(`cp -v %s %s`, newServerCert, path)
-		err = sh.Run("sh", "-c", cpCmd)
+		err = sh.RunV("sh", "-c", cpCmd)
 		if err != nil {
 			return fmt.Errorf("Could not copy newly self-signed Server certificate on %s: %v", path, err)
 		}
-
 	}
+	newServerKey := "serverkey.pem"
+	cpCmd = fmt.Sprintf(`cp -v %s %s`, serverKey, newServerKey)
+	err = sh.RunV("sh", "-c", cpCmd)
+	if err != nil {
+		return fmt.Errorf("Could not rename newly generated Server key: %v", err)
+	}
+
+	adminPath = strings.Join([]string{"..", config.ServerUtils.Paths[0], newServerKey}, "/")
+	apiPath = strings.Join([]string{"..", config.ServerUtils.Paths[1], newServerKey}, "/")
+	integrationPath = strings.Join([]string{"..", config.ServerUtils.Paths[2], newServerKey}, "/")
+	remotingPath = strings.Join([]string{"..", config.ServerUtils.Paths[3], newServerKey}, "/")
+	shutdownPath = strings.Join([]string{"..", config.ServerUtils.Paths[4], newServerKey}, "/")
+	tektclientPath = strings.Join([]string{"..", config.ServerUtils.Paths[5], newServerKey}, "/")
+
+	serverUtilsPaths = []string{adminPath, apiPath, integrationPath, remotingPath, shutdownPath, tektclientPath}
+	for p := range serverUtilsPaths {
+		path := serverUtilsPaths[p]
+		cpCmd = fmt.Sprintf(`cp -v %s %s`, newServerKey, path)
+		err = sh.RunV("sh", "-c", cpCmd)
+		if err != nil {
+			return fmt.Errorf("Could not copy generated Server key on %s: %v", path, err)
+		}
+	}
+
+	fmt.Println("Storing newly generated files in place")
+	cliPath := strings.Join([]string{"..", config.Ca.Paths[0]}, "/")
+	mvCmd := fmt.Sprintf(`mv -v *.* %s`, cliPath)
+	err = sh.RunV("sh", "-c", mvCmd)
+	if err != nil {
+		return fmt.Errorf("Could not move newly generated files in %s: %v", cliPath, err)
+	}
+
+	fmt.Printf("Removing %s directory\n", tmpDir)
+	os.RemoveAll("../tmp")
 	return nil
 }
 

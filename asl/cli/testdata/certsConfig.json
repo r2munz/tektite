@@ -70,7 +70,7 @@
     "configFile": "../cfg/certs/openssl.cnf",
     "crt": "servercert.pem",
     "days": 825,
-    "key": "cli/testdata/casignedserverkey.pem",
+    "key": "server.key",
     "paths": [
       "admin/testdata",
       "api/testdata",
