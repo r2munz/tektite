@@ -308,6 +308,7 @@ func RenewCerts() error {
 		return fmt.Errorf("Could not execute openssl command to create CA private key: %v", err)
 	}
 
+	//TODO remove comment section
 	// Pub key not needed for signing the certificates
 	/*
 		caPubKey := config.Ca.Pubkey
@@ -416,8 +417,30 @@ func RenewCerts() error {
 		return fmt.Errorf("Could not sign Client certificate: %v", err)
 	}
 
-	//TODO move selfsigned server cert in place for server utils and remove tmp folder
+	newServerCert := "servercert.pem"
+	cpCmd := fmt.Sprintf(`cp %s %s`, serverSelfSignedCrt, newServerCert)
+	err = sh.Run("sh", "-c", cpCmd)
+	if err != nil {
+		return fmt.Errorf("Could not rename newly self-signed Server certificate: %v", err)
+	}
 
+	adminPath := strings.Join([]string{"..", config.ServerUtils.Paths[0], newServerCert}, "/")
+	apiPath := strings.Join([]string{"..", config.ServerUtils.Paths[1], newServerCert}, "/")
+	integrationPath := strings.Join([]string{"..", config.ServerUtils.Paths[2], newServerCert}, "/")
+	remotingPath := strings.Join([]string{"..", config.ServerUtils.Paths[3], newServerCert}, "/")
+	shutdownPath := strings.Join([]string{"..", config.ServerUtils.Paths[4], newServerCert}, "/")
+	tektclientPath := strings.Join([]string{"..", config.ServerUtils.Paths[5], newServerCert}, "/")
+
+	serverUtilsPaths := []string{adminPath, apiPath, integrationPath, remotingPath, shutdownPath, tektclientPath}
+	for p := range serverUtilsPaths {
+		path := serverUtilsPaths[p]
+		cpCmd = fmt.Sprintf(`cp -v %s %s`, newServerCert, path)
+		err = sh.Run("sh", "-c", cpCmd)
+		if err != nil {
+			return fmt.Errorf("Could not copy newly self-signed Server certificate on %s: %v", path, err)
+		}
+
+	}
 	return nil
 }
 
