@@ -463,7 +463,8 @@ func RenewCerts() error {
 	}
 
 	fmt.Printf("Removing %s directory\n", tmpDir)
-	os.RemoveAll("../tmp")
+	tmpPath := strings.Join([]string{"..", tmpDir}, "/")
+	os.RemoveAll(tmpPath)
 	return nil
 }
 
