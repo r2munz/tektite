@@ -29,6 +29,44 @@ var (
 	g0     = sh.RunCmd(goexec)
 )
 
+type Ca struct {
+	Bits      int      `json:"bits"`
+	Crt       string   `json:"crt"`
+	Days      int      `json:"days"`
+	Key       string   `json:"key"`
+	Paths     []string `json:"paths"`
+	Pubkey    string   `json:"pubkey"`
+	SignedCrt string   `json:"signedCrt"`
+	Subject   string   `json:"subject"`
+}
+type CaSigned struct {
+	Crt     string   `json:"crt"`
+	Days    int      `json:"days"`
+	ExtFile string   `json:"extFile"`
+	Key     string   `json:"key"`
+	Paths   []string `json:"paths"`
+	Req     string   `json:"req"`
+	Subject string   `json:"subject"`
+}
+type SelfSigned struct {
+	ConfigFile string   `json:"configFile"`
+	Crt        string   `json:"crt"`
+	Days       int      `json:"days"`
+	Key        string   `json:"key"`
+	Paths      []string `json:"paths"`
+	PkeyOpt    string   `json:"pkeyOpt"`
+	Subject    string   `json:"subject"`
+}
+type CertsConfig struct {
+	Ca                *Ca         `json:"ca"`
+	CaSignedServer    *CaSigned   `json:"caSignedServer"`
+	CaSignedClient    *CaSigned   `json:"caSignedClient"`
+	SelfSignedServer  *SelfSigned `json:"selfSignedServer"`
+	SelfSignedClient  *SelfSigned `json:"selfSignedClient"`
+	SelfSignedClient2 *SelfSigned `json:"selfSignedClient2"`
+	ServerUtils       *SelfSigned `json:"serverUtils"`
+}
+
 // Build builds the binary
 func Build() error {
 	fmt.Println("Building the binary...")
@@ -149,56 +187,19 @@ func CheckCerts() error {
 	// Open the JSON file
 	file, err := os.Open(certsConfigPath)
 	if err != nil {
-		return fmt.Errorf("Could not open file: %w", err)
+		return fmt.Errorf("could not open file: %w", err)
 	}
 	defer file.Close()
 	// Read the file's content
 	bytes, err := ioutil.ReadAll(file)
 	if err != nil {
-		return fmt.Errorf("Could not read file: %w", err)
+		return fmt.Errorf("could not read file: %w", err)
 	}
 
-	type Ca struct {
-		Bits      int      `json:"bits"`
-		Crt       string   `json:"crt"`
-		Days      int      `json:"days"`
-		Key       string   `json:"key"`
-		Paths     []string `json:"paths"`
-		Pubkey    string   `json:"pubkey"`
-		SignedCrt string   `json:"signedCrt"`
-		Subject   string   `json:"subject"`
-	}
-	type CaSigned struct {
-		Crt     string   `json:"crt"`
-		Days    int      `json:"days"`
-		ExtFile string   `json:"extFile"`
-		Key     string   `json:"key"`
-		Paths   []string `json:"paths"`
-		Req     string   `json:"req"`
-		Subject string   `json:"subject"`
-	}
-	type SelfSigned struct {
-		ConfigFile string   `json:"configFile"`
-		Crt        string   `json:"crt"`
-		Days       int      `json:"days"`
-		Key        string   `json:"key"`
-		Paths      []string `json:"paths"`
-		PkeyOpt    string   `json:"pkeyOpt"`
-		Subject    string   `json:"subject"`
-	}
-	type CertsConfig struct {
-		Ca                *Ca         `json:"ca"`
-		CaSignedServer    *CaSigned   `json:"caSignedServer"`
-		CaSignedClient    *CaSigned   `json:"caSignedClient"`
-		SelfSignedServer  *SelfSigned `json:"selfSignedServer"`
-		SelfSignedClient  *SelfSigned `json:"selfSignedClient"`
-		SelfSignedClient2 *SelfSigned `json:"selfSignedClient2"`
-		ServerUtils       *SelfSigned `json:"serverUtils"`
-	}
 	var config CertsConfig
 	err = json.Unmarshal(bytes, &config)
 	if err != nil {
-		return fmt.Errorf("Could not unmarshal certsConfig.json: %s\n", err)
+		return fmt.Errorf("could not unmarshal certsConfig.json: %s\n", err)
 	}
 	caEnv := strings.Join([]string{config.Ca.Paths[0], config.Ca.Crt}, "/")
 	caSignedServerEnv := strings.Join([]string{config.CaSignedServer.Paths[0], config.CaSignedServer.Crt}, "/")
@@ -220,7 +221,7 @@ func CheckCerts() error {
 		opensslCmd := fmt.Sprintf(`openssl x509 -enddate -noout -in "%s"|cut -d= -f 2`, env)
 		output, err := sh.Output("sh", "-c", opensslCmd)
 		if err != nil {
-			return fmt.Errorf("Could not execute command openssl cert check command on %s", env)
+			return fmt.Errorf("could not execute command openssl cert check command on %s", env)
 		}
 		fmt.Println(output, ": ", env)
 	}
@@ -235,68 +236,31 @@ func RenewCerts() error {
 	// Open the JSON file
 	file, err := os.Open(certsConfigPath)
 	if err != nil {
-		return fmt.Errorf("Could not open file: %w", err)
+		return fmt.Errorf("could not open file: %w", err)
 	}
 	defer file.Close()
 	// Read the file's content
 	bytes, err := ioutil.ReadAll(file)
 	if err != nil {
-		return fmt.Errorf("Could not read file: %w", err)
+		return fmt.Errorf("could not read file: %w", err)
 	}
 
-	type Ca struct {
-		Bits      int      `json:"bits"`
-		Crt       string   `json:"crt"`
-		Days      int      `json:"days"`
-		Key       string   `json:"key"`
-		Paths     []string `json:"paths"`
-		Pubkey    string   `json:"pubkey"`
-		SignedCrt string   `json:"signedCrt"`
-		Subject   string   `json:"subject"`
-	}
-	type CaSigned struct {
-		Crt     string   `json:"crt"`
-		Days    int      `json:"days"`
-		ExtFile string   `json:"extFile"`
-		Key     string   `json:"key"`
-		Paths   []string `json:"paths"`
-		Req     string   `json:"req"`
-		Subject string   `json:"subject"`
-	}
-	type SelfSigned struct {
-		ConfigFile string   `json:"configFile"`
-		Crt        string   `json:"crt"`
-		Days       int      `json:"days"`
-		Key        string   `json:"key"`
-		Paths      []string `json:"paths"`
-		PkeyOpt    string   `json:"pkeyOpt"`
-		Subject    string   `json:"subject"`
-	}
-	type CertsConfig struct {
-		Ca                *Ca         `json:"ca"`
-		CaSignedServer    *CaSigned   `json:"caSignedServer"`
-		CaSignedClient    *CaSigned   `json:"caSignedClient"`
-		SelfSignedServer  *SelfSigned `json:"selfSignedServer"`
-		SelfSignedClient  *SelfSigned `json:"selfSignedClient"`
-		SelfSignedClient2 *SelfSigned `json:"selfSignedClient2"`
-		ServerUtils       *SelfSigned `json:"serverUtils"`
-	}
 	var config CertsConfig
 	err = json.Unmarshal(bytes, &config)
 	if err != nil {
-		return fmt.Errorf("Could not unmarshal certsConfig.json: %s\n", err)
+		return fmt.Errorf("could not unmarshal certsConfig.json: %s\n", err)
 	}
 
 	tmpDir := "tmp"
 	fmt.Println("Creating", tmpDir, "directory")
 	err = sh.Run("mkdir", "-p", tmpDir)
 	if err != nil {
-		return fmt.Errorf("Failed to create tmp directory: %v", err)
+		return fmt.Errorf("failed to create tmp directory: %v", err)
 	}
 	err = os.Chdir(tmpDir)
 	defer os.Chdir("..")
 	if err != nil {
-		return fmt.Errorf("Failed to change directory to %s: %v", tmpDir, err)
+		return fmt.Errorf("failed to change directory to %s: %v", tmpDir, err)
 	}
 
 	fmt.Println("Generating CA keys and certificates")
@@ -305,7 +269,7 @@ func RenewCerts() error {
 	opensslCmd := fmt.Sprintf(`openssl genrsa -out %s %d`, caKey, caBits)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
-		return fmt.Errorf("Could not execute openssl command to create CA private key: %v", err)
+		return fmt.Errorf("could not execute openssl command to create CA private key: %v", err)
 	}
 
 	caDays := config.Ca.Days
@@ -314,14 +278,14 @@ func RenewCerts() error {
 	opensslCmd = fmt.Sprintf(`openssl req -x509 -new -nodes -key %s -sha256 -days %d -out %s -subj "%s"`, caKey, caDays, caSignedCrt, caSubject)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
-		return fmt.Errorf("Could not generate CA Signed certificate: %v", err)
+		return fmt.Errorf("could not generate CA Signed certificate: %v", err)
 	}
 
 	caCrt := config.Ca.Crt
 	catCmd := fmt.Sprintf(`cat %s %s > %s`, caSignedCrt, caKey, caCrt)
 	err = sh.Run("sh", "-c", catCmd)
 	if err != nil {
-		return fmt.Errorf("Could not generate CA PEM certificate: %v", err)
+		return fmt.Errorf("could not generate CA PEM certificate: %v", err)
 	}
 
 	fmt.Println("Generating server and clients keys, self-signed certificates")
@@ -334,17 +298,17 @@ func RenewCerts() error {
 	opensslCmd = fmt.Sprintf(`openssl genpkey -algorithm RSA -out %s -pkeyopt %s`, serverKey, serverPkeyOpt)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
-		return fmt.Errorf("Could not generate Server key: %v", err)
+		return fmt.Errorf("could not generate Server key: %v", err)
 	}
 	opensslCmd = fmt.Sprintf(`openssl genpkey -algorithm RSA -out %s -pkeyopt %s`, clientKey, clientPkeyOpt)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
-		return fmt.Errorf("Could not generate Client key: %v", err)
+		return fmt.Errorf("could not generate Client key: %v", err)
 	}
 	opensslCmd = fmt.Sprintf(`openssl genpkey -algorithm RSA -out %s -pkeyopt %s`, client2Key, client2PkeyOpt)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
-		return fmt.Errorf("Could not generate Client2 key: %v", err)
+		return fmt.Errorf("could not generate Client2 key: %v", err)
 	}
 	serverSelfSignedCrt := config.SelfSignedServer.Crt
 	clientSelfSignedCrt := config.SelfSignedClient.Crt
@@ -361,17 +325,17 @@ func RenewCerts() error {
 	opensslCmd = fmt.Sprintf(`openssl req -new -x509 -key %s -out %s -config %s -days %d -subj "%s"`, serverKey, serverSelfSignedCrt, serverSelfSignedConfigFile, serverSelfSignedDays, serverSelfSignedSubject)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
-		return fmt.Errorf("Could not generate Server self signed certificate: %v", err)
+		return fmt.Errorf("could not generate Server self signed certificate: %v", err)
 	}
 	opensslCmd = fmt.Sprintf(`openssl req -new -x509 -key %s -out %s -config %s -days %d -subj "%s"`, clientKey, clientSelfSignedCrt, clientSelfSignedConfigFile, clientSelfSignedDays, clientSelfSignedSubject)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
-		return fmt.Errorf("Could not generate Client self signed certificate: %v", err)
+		return fmt.Errorf("could not generate Client self signed certificate: %v", err)
 	}
 	opensslCmd = fmt.Sprintf(`openssl req -new -x509 -key %s -out %s -config %s -days %d -subj "%s"`, client2Key, client2SelfSignedCrt, client2SelfSignedConfigFile, client2SelfSignedDays, client2SelfSignedSubject)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
-		return fmt.Errorf("Could not generate Client2 self signed certificate: %v", err)
+		return fmt.Errorf("could not generate Client2 self signed certificate: %v", err)
 	}
 
 	fmt.Println("Generating server and client requests, signed certificates")
@@ -382,12 +346,12 @@ func RenewCerts() error {
 	opensslCmd = fmt.Sprintf(`openssl req -new -key %s -out %s -subj "%s"`, serverKey, serverReq, serverCaSignedSubject)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
-		return fmt.Errorf("Could not generate Server request: %v", err)
+		return fmt.Errorf("could not generate Server request: %v", err)
 	}
 	opensslCmd = fmt.Sprintf(`openssl req -new -key %s -out %s -subj "%s"`, clientKey, clientReq, clientCaSignedSubject)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
-		return fmt.Errorf("Could not generate Client request: %v", err)
+		return fmt.Errorf("could not generate Client request: %v", err)
 	}
 	serverCaSignedCrt := config.CaSignedServer.Crt
 	clientCaSignedCrt := config.CaSignedClient.Crt
@@ -398,12 +362,12 @@ func RenewCerts() error {
 	opensslCmd = fmt.Sprintf(`openssl x509 -req -in %s -CA %s -out %s -days %d -sha256 -extfile %s`, serverReq, caCrt, serverCaSignedCrt, serverCaSignedDays, serverCaSignedExtFile)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
-		return fmt.Errorf("Could not sign Server certificate: %v", err)
+		return fmt.Errorf("could not sign Server certificate: %v", err)
 	}
 	opensslCmd = fmt.Sprintf(`openssl x509 -req -in %s -CA %s -out %s -days %d -sha256 -extfile %s`, clientReq, caCrt, clientCaSignedCrt, clientCaSignedDays, clientCaSignedExtFile)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
-		return fmt.Errorf("Could not sign Client certificate: %v", err)
+		return fmt.Errorf("could not sign Client certificate: %v", err)
 	}
 
 	fmt.Println("Copying newly generated files in place")
@@ -411,7 +375,7 @@ func RenewCerts() error {
 	cpCmd := fmt.Sprintf(`cp -v %s %s`, serverSelfSignedCrt, newServerCert)
 	err = sh.RunV("sh", "-c", cpCmd)
 	if err != nil {
-		return fmt.Errorf("Could not rename newly self-signed Server certificate: %v", err)
+		return fmt.Errorf("could not rename newly self-signed Server certificate: %v", err)
 	}
 
 	adminPath := strings.Join([]string{"..", config.ServerUtils.Paths[0], newServerCert}, "/")
@@ -427,14 +391,14 @@ func RenewCerts() error {
 		cpCmd = fmt.Sprintf(`cp -v %s %s`, newServerCert, path)
 		err = sh.RunV("sh", "-c", cpCmd)
 		if err != nil {
-			return fmt.Errorf("Could not copy newly self-signed Server certificate on %s: %v", path, err)
+			return fmt.Errorf("could not copy newly self-signed Server certificate on %s: %v", path, err)
 		}
 	}
 	newServerKey := "serverkey.pem"
 	cpCmd = fmt.Sprintf(`cp -v %s %s`, serverKey, newServerKey)
 	err = sh.RunV("sh", "-c", cpCmd)
 	if err != nil {
-		return fmt.Errorf("Could not rename newly generated Server key: %v", err)
+		return fmt.Errorf("could not rename newly generated Server key: %v", err)
 	}
 
 	adminPath = strings.Join([]string{"..", config.ServerUtils.Paths[0], newServerKey}, "/")
@@ -450,7 +414,7 @@ func RenewCerts() error {
 		cpCmd = fmt.Sprintf(`cp -v %s %s`, newServerKey, path)
 		err = sh.RunV("sh", "-c", cpCmd)
 		if err != nil {
-			return fmt.Errorf("Could not copy generated Server key on %s: %v", path, err)
+			return fmt.Errorf("could not copy generated Server key on %s: %v", path, err)
 		}
 	}
 
@@ -459,7 +423,7 @@ func RenewCerts() error {
 	mvCmd := fmt.Sprintf(`mv -v *.* %s`, cliPath)
 	err = sh.RunV("sh", "-c", mvCmd)
 	if err != nil {
-		return fmt.Errorf("Could not move newly generated files in %s: %v", cliPath, err)
+		return fmt.Errorf("could not move newly generated files in %s: %v", cliPath, err)
 	}
 
 	fmt.Printf("Removing %s directory\n", tmpDir)
