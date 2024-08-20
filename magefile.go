@@ -183,7 +183,7 @@ func Run() error {
 // Check internal certificates
 func CheckCerts() error {
 	fmt.Println("Checking internal certificates expiration dates")
-	certsConfigPath := "cli/testdata/certsConfig.json"
+	certsConfigPath := "asl/cli/testdata/certsConfig.json"
 	// Open the JSON file
 	file, err := os.Open(certsConfigPath)
 	if err != nil {
@@ -232,7 +232,7 @@ func CheckCerts() error {
 func RenewCerts() error {
 	fmt.Println("Renewing internal certificates")
 
-	certsConfigPath := "cli/testdata/certsConfig.json"
+	certsConfigPath := "asl/cli/testdata/certsConfig.json"
 	// Open the JSON file
 	file, err := os.Open(certsConfigPath)
 	if err != nil {
@@ -399,6 +399,19 @@ func RenewCerts() error {
 	err = sh.RunV("sh", "-c", cpCmd)
 	if err != nil {
 		return fmt.Errorf("could not rename newly generated Server key: %v", err)
+	}
+
+	caSignedClientKey := config.CaSignedClient.Key
+	caSignedServerKey := config.CaSignedServer.Key
+	cpCmd = fmt.Sprintf(`cp -v %s %s`, caKey, caSignedClientKey)
+	err = sh.RunV("sh", "-c", cpCmd)
+	if err != nil {
+		return fmt.Errorf("could not rename newly generated ca key: %v", err)
+	}
+	cpCmd = fmt.Sprintf(`cp -v %s %s`, caKey, caSignedServerKey)
+	err = sh.RunV("sh", "-c", cpCmd)
+	if err != nil {
+		return fmt.Errorf("could not rename newly generated ca key: %v", err)
 	}
 
 	adminPath = strings.Join([]string{"..", config.ServerUtils.Paths[0], newServerKey}, "/")

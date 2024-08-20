@@ -5,7 +5,7 @@
     "days": 825,
     "key": "ca.key",
     "paths": [
-      "cli/testdata"
+      "asl/cli/testdata"
     ],
     "pubkey": "key.pub",
     "signedCrt": "ca.crt",
@@ -14,10 +14,10 @@
   "caSignedServer": {
     "crt": "casignedservercert.pem",
     "days": 825,
-    "extFile": "../cli/testdata/server-v3.ext",
-    "key": "server.key",
+    "extFile": "../asl/cli/testdata/server-v3.ext",
+    "key": "casignedserverkey.pem",
     "paths": [
-      "cli/testdata"
+      "asl/cli/testdata"
     ],
     "req": "casignedservercert.req",
     "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme badgers ltd./"
@@ -25,10 +25,10 @@
   "caSignedClient": {
     "crt": "casignedclientcert.pem",
     "days": 825,
-    "extFile": "../cli/testdata/server-v3.ext",
-    "key": "client.key",
+    "extFile": "../asl/cli/testdata/server-v3.ext",
+    "key": "casignedclientkey.pem",
     "paths": [
-      "cli/testdata"
+      "asl/cli/testdata"
     ],
     "req": "casignedclientcert.req",
     "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme squirrels ltd./"
@@ -37,10 +37,10 @@
     "configFile": "../cfg/certs/openssl.cnf",
     "crt": "selfsignedservercert.pem",
     "days": 825,
-    "key": "server.key",
+    "key": "selfsignedserverkey.pem",
     "pkeyopt": "rsa_keygen_bits:4096",
     "paths": [
-      "cli/testdata"
+      "asl/cli/testdata"
     ],
     "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme antelopes ltd./"
   },
@@ -48,9 +48,9 @@
     "configFile": "../cfg/certs/openssl.cnf",
     "crt": "selfsignedclientcert.pem",
     "days": 825,
-    "key": "client.key",
+    "key": "selfsignedclientkey.pem",
     "paths": [
-      "cli/testdata"
+      "asl/cli/testdata"
     ],
     "pkeyOpt": "rsa_keygen_bits:4096",
     "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme aardvarks ltd./"
@@ -59,9 +59,9 @@
     "configFile": "../cfg/certs/openssl.cnf",
     "crt": "selfsignedclientcert2.pem",
     "days": 825,
-    "key": "client2.key",
+    "key": "selfsignedclientkey2.pem",
     "paths": [
-      "cli/testdata"
+      "asl/cli/testdata"
     ],
     "pkeyOpt": "rsa_keygen_bits:4096",
     "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme squirrels ltd./"
@@ -73,11 +73,11 @@
     "key": "server.key",
     "paths": [
       "admin/testdata",
-      "api/testdata",
+      "asl/api/testdata",
       "integration/testdata",
-      "remoting/testdata",
+      "asl/remoting/testdata",
       "shutdown/testdata",
-      "tekclient/testdata"
+      "client/testdata"
     ],
     "pkeyOpt": "",
     "subject": "/C=US/L=San Francisco, street=Golden Gate Bridge, postalCode=94016/O=acme badgers ltd./"
