@@ -16,6 +16,7 @@
     "days": 825,
     "extFile": "../asl/cli/testdata/server-v3.ext",
     "key": "casignedserverkey.pem",
+    "pkeyopt": "rsa_keygen_bits:4096",
     "paths": [
       "asl/cli/testdata"
     ],
@@ -27,6 +28,7 @@
     "days": 825,
     "extFile": "../asl/cli/testdata/server-v3.ext",
     "key": "casignedclientkey.pem",
+    "pkeyopt": "rsa_keygen_bits:4096",
     "paths": [
       "asl/cli/testdata"
     ],

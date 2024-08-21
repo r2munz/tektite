@@ -45,6 +45,7 @@ type CaSigned struct {
 	ExtFile string   `json:"extFile"`
 	Key     string   `json:"key"`
 	Paths   []string `json:"paths"`
+	PkeyOpt string   `json:"pkeyOpt"`
 	Req     string   `json:"req"`
 	Subject string   `json:"subject"`
 }
@@ -338,7 +339,23 @@ func RenewCerts() error {
 		return fmt.Errorf("could not generate Client2 self signed certificate: %v", err)
 	}
 
-	fmt.Println("Generating server and client requests, signed certificates")
+	fmt.Println("Generating server and client keys, requests, signed certificates")
+
+	serverKey = config.CaSignedServer.Key
+	clientKey = config.CaSignedClient.Key
+	serverPkeyOpt = config.CaSignedServer.PkeyOpt
+	clientPkeyOpt = config.CaSignedClient.PkeyOpt
+	opensslCmd = fmt.Sprintf(`openssl genpkey -algorithm RSA -out %s -pkeyopt %s`, serverKey, serverPkeyOpt)
+	err = sh.Run("sh", "-c", opensslCmd)
+	if err != nil {
+		return fmt.Errorf("could not generate Server key: %v", err)
+	}
+	opensslCmd = fmt.Sprintf(`openssl genpkey -algorithm RSA -out %s -pkeyopt %s`, clientKey, clientPkeyOpt)
+	err = sh.Run("sh", "-c", opensslCmd)
+	if err != nil {
+		return fmt.Errorf("could not generate Client key: %v", err)
+	}
+
 	serverReq := config.CaSignedServer.Req
 	clientReq := config.CaSignedClient.Req
 	serverCaSignedSubject := config.CaSignedServer.Subject
@@ -399,19 +416,6 @@ func RenewCerts() error {
 	err = sh.RunV("sh", "-c", cpCmd)
 	if err != nil {
 		return fmt.Errorf("could not rename newly generated Server key: %v", err)
-	}
-
-	caSignedClientKey := config.CaSignedClient.Key
-	caSignedServerKey := config.CaSignedServer.Key
-	cpCmd = fmt.Sprintf(`cp -v %s %s`, caKey, caSignedClientKey)
-	err = sh.RunV("sh", "-c", cpCmd)
-	if err != nil {
-		return fmt.Errorf("could not rename newly generated ca key: %v", err)
-	}
-	cpCmd = fmt.Sprintf(`cp -v %s %s`, caKey, caSignedServerKey)
-	err = sh.RunV("sh", "-c", cpCmd)
-	if err != nil {
-		return fmt.Errorf("could not rename newly generated ca key: %v", err)
 	}
 
 	adminPath = strings.Join([]string{"..", config.ServerUtils.Paths[0], newServerKey}, "/")
