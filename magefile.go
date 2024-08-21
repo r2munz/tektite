@@ -290,23 +290,23 @@ func RenewCerts() error {
 	}
 
 	fmt.Println("Generating server and clients keys, self-signed certificates")
-	serverKey := config.SelfSignedServer.Key
-	clientKey := config.SelfSignedClient.Key
-	client2Key := config.SelfSignedClient2.Key
+	selfSignedServerKey := config.SelfSignedServer.Key
+	selfSignedClientKey := config.SelfSignedClient.Key
+	selfSignedClient2Key := config.SelfSignedClient2.Key
 	serverPkeyOpt := config.SelfSignedServer.PkeyOpt
 	clientPkeyOpt := config.SelfSignedClient.PkeyOpt
 	client2PkeyOpt := config.SelfSignedClient.PkeyOpt
-	opensslCmd = fmt.Sprintf(`openssl genpkey -algorithm RSA -out %s -pkeyopt %s`, serverKey, serverPkeyOpt)
+	opensslCmd = fmt.Sprintf(`openssl genpkey -algorithm RSA -out %s -pkeyopt %s`, selfSignedServerKey, serverPkeyOpt)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
 		return fmt.Errorf("could not generate Server key: %v", err)
 	}
-	opensslCmd = fmt.Sprintf(`openssl genpkey -algorithm RSA -out %s -pkeyopt %s`, clientKey, clientPkeyOpt)
+	opensslCmd = fmt.Sprintf(`openssl genpkey -algorithm RSA -out %s -pkeyopt %s`, selfSignedClientKey, clientPkeyOpt)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
 		return fmt.Errorf("could not generate Client key: %v", err)
 	}
-	opensslCmd = fmt.Sprintf(`openssl genpkey -algorithm RSA -out %s -pkeyopt %s`, client2Key, client2PkeyOpt)
+	opensslCmd = fmt.Sprintf(`openssl genpkey -algorithm RSA -out %s -pkeyopt %s`, selfSignedClient2Key, client2PkeyOpt)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
 		return fmt.Errorf("could not generate Client2 key: %v", err)
@@ -323,17 +323,17 @@ func RenewCerts() error {
 	serverSelfSignedSubject := config.SelfSignedServer.Subject
 	clientSelfSignedSubject := config.SelfSignedClient.Subject
 	client2SelfSignedSubject := config.SelfSignedClient2.Subject
-	opensslCmd = fmt.Sprintf(`openssl req -new -x509 -key %s -out %s -config %s -days %d -subj "%s"`, serverKey, serverSelfSignedCrt, serverSelfSignedConfigFile, serverSelfSignedDays, serverSelfSignedSubject)
+	opensslCmd = fmt.Sprintf(`openssl req -new -x509 -key %s -out %s -config %s -days %d -subj "%s"`, selfSignedServerKey, serverSelfSignedCrt, serverSelfSignedConfigFile, serverSelfSignedDays, serverSelfSignedSubject)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
 		return fmt.Errorf("could not generate Server self signed certificate: %v", err)
 	}
-	opensslCmd = fmt.Sprintf(`openssl req -new -x509 -key %s -out %s -config %s -days %d -subj "%s"`, clientKey, clientSelfSignedCrt, clientSelfSignedConfigFile, clientSelfSignedDays, clientSelfSignedSubject)
+	opensslCmd = fmt.Sprintf(`openssl req -new -x509 -key %s -out %s -config %s -days %d -subj "%s"`, selfSignedClientKey, clientSelfSignedCrt, clientSelfSignedConfigFile, clientSelfSignedDays, clientSelfSignedSubject)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
 		return fmt.Errorf("could not generate Client self signed certificate: %v", err)
 	}
-	opensslCmd = fmt.Sprintf(`openssl req -new -x509 -key %s -out %s -config %s -days %d -subj "%s"`, client2Key, client2SelfSignedCrt, client2SelfSignedConfigFile, client2SelfSignedDays, client2SelfSignedSubject)
+	opensslCmd = fmt.Sprintf(`openssl req -new -x509 -key %s -out %s -config %s -days %d -subj "%s"`, selfSignedClient2Key, client2SelfSignedCrt, client2SelfSignedConfigFile, client2SelfSignedDays, client2SelfSignedSubject)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
 		return fmt.Errorf("could not generate Client2 self signed certificate: %v", err)
@@ -341,16 +341,16 @@ func RenewCerts() error {
 
 	fmt.Println("Generating server and client keys, requests, signed certificates")
 
-	serverKey = config.CaSignedServer.Key
-	clientKey = config.CaSignedClient.Key
+	caSignedServerKey := config.CaSignedServer.Key
+	caSignedClientKey := config.CaSignedClient.Key
 	serverPkeyOpt = config.CaSignedServer.PkeyOpt
 	clientPkeyOpt = config.CaSignedClient.PkeyOpt
-	opensslCmd = fmt.Sprintf(`openssl genpkey -algorithm RSA -out %s -pkeyopt %s`, serverKey, serverPkeyOpt)
+	opensslCmd = fmt.Sprintf(`openssl genpkey -algorithm RSA -out %s -pkeyopt %s`, caSignedServerKey, serverPkeyOpt)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
 		return fmt.Errorf("could not generate Server key: %v", err)
 	}
-	opensslCmd = fmt.Sprintf(`openssl genpkey -algorithm RSA -out %s -pkeyopt %s`, clientKey, clientPkeyOpt)
+	opensslCmd = fmt.Sprintf(`openssl genpkey -algorithm RSA -out %s -pkeyopt %s`, caSignedClientKey, clientPkeyOpt)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
 		return fmt.Errorf("could not generate Client key: %v", err)
@@ -360,12 +360,12 @@ func RenewCerts() error {
 	clientReq := config.CaSignedClient.Req
 	serverCaSignedSubject := config.CaSignedServer.Subject
 	clientCaSignedSubject := config.CaSignedClient.Subject
-	opensslCmd = fmt.Sprintf(`openssl req -new -key %s -out %s -subj "%s"`, serverKey, serverReq, serverCaSignedSubject)
+	opensslCmd = fmt.Sprintf(`openssl req -new -key %s -out %s -subj "%s"`, caSignedServerKey, serverReq, serverCaSignedSubject)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
 		return fmt.Errorf("could not generate Server request: %v", err)
 	}
-	opensslCmd = fmt.Sprintf(`openssl req -new -key %s -out %s -subj "%s"`, clientKey, clientReq, clientCaSignedSubject)
+	opensslCmd = fmt.Sprintf(`openssl req -new -key %s -out %s -subj "%s"`, caSignedClientKey, clientReq, clientCaSignedSubject)
 	err = sh.Run("sh", "-c", opensslCmd)
 	if err != nil {
 		return fmt.Errorf("could not generate Client request: %v", err)
@@ -387,14 +387,25 @@ func RenewCerts() error {
 		return fmt.Errorf("could not sign Client certificate: %v", err)
 	}
 
+	fmt.Println("Generating server utils self-signed certificate from server ca-signed key")
+	newServerCert := config.ServerUtils.Crt
+	serverUtilsConfigFile := config.ServerUtils.ConfigFile
+	serverUtilsDays := config.ServerUtils.Days
+	serverUtilsSubject := config.ServerUtils.Subject
+	opensslCmd = fmt.Sprintf(`openssl req -new -x509 -key %s -out %s -config %s -days %d -subj "%s"`, caSignedServerKey, newServerCert, serverUtilsConfigFile, serverUtilsDays, serverUtilsSubject)
+	err = sh.Run("sh", "-c", opensslCmd)
+	if err != nil {
+		return fmt.Errorf("could not generate Server self signed certificate: %v", err)
+	}
+
 	fmt.Println("Copying newly generated files in place")
-	newServerCert := "servercert.pem"
-	cpCmd := fmt.Sprintf(`cp -v %s %s`, serverSelfSignedCrt, newServerCert)
+	/* newServerCert := "servercert.pem"
+	cpCmd := fmt.Sprintf(`cp -v %s %s`, serverCaSignedCrt, newServerCert)
 	err = sh.RunV("sh", "-c", cpCmd)
 	if err != nil {
 		return fmt.Errorf("could not rename newly self-signed Server certificate: %v", err)
 	}
-
+	*/
 	adminPath := strings.Join([]string{"..", config.ServerUtils.Paths[0], newServerCert}, "/")
 	apiPath := strings.Join([]string{"..", config.ServerUtils.Paths[1], newServerCert}, "/")
 	integrationPath := strings.Join([]string{"..", config.ServerUtils.Paths[2], newServerCert}, "/")
@@ -405,14 +416,14 @@ func RenewCerts() error {
 	serverUtilsPaths := []string{adminPath, apiPath, integrationPath, remotingPath, shutdownPath, tektclientPath}
 	for p := range serverUtilsPaths {
 		path := serverUtilsPaths[p]
-		cpCmd = fmt.Sprintf(`cp -v %s %s`, newServerCert, path)
+		cpCmd := fmt.Sprintf(`cp -v %s %s`, newServerCert, path)
 		err = sh.RunV("sh", "-c", cpCmd)
 		if err != nil {
 			return fmt.Errorf("could not copy newly self-signed Server certificate on %s: %v", path, err)
 		}
 	}
 	newServerKey := "serverkey.pem"
-	cpCmd = fmt.Sprintf(`cp -v %s %s`, serverKey, newServerKey)
+	cpCmd := fmt.Sprintf(`cp -v %s %s`, caSignedServerKey, newServerKey)
 	err = sh.RunV("sh", "-c", cpCmd)
 	if err != nil {
 		return fmt.Errorf("could not rename newly generated Server key: %v", err)
