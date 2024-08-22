@@ -399,13 +399,6 @@ func RenewCerts() error {
 	}
 
 	fmt.Println("Copying newly generated files in place")
-	/* newServerCert := "servercert.pem"
-	cpCmd := fmt.Sprintf(`cp -v %s %s`, serverCaSignedCrt, newServerCert)
-	err = sh.RunV("sh", "-c", cpCmd)
-	if err != nil {
-		return fmt.Errorf("could not rename newly self-signed Server certificate: %v", err)
-	}
-	*/
 	adminPath := strings.Join([]string{"..", config.ServerUtils.Paths[0], newServerCert}, "/")
 	apiPath := strings.Join([]string{"..", config.ServerUtils.Paths[1], newServerCert}, "/")
 	integrationPath := strings.Join([]string{"..", config.ServerUtils.Paths[2], newServerCert}, "/")
